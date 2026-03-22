@@ -7,8 +7,8 @@ RUN npm ci
 
 COPY . .
 
-ARG API_URL=https://sios-production.up.railway.app
-ENV VITE_API_URL=$API_URL
+ARG API_URL
+ENV VITE_API_URL=${API_URL:-https://sios-production.up.railway.app}
 
 RUN npm run build
 
