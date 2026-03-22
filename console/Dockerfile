@@ -6,6 +6,10 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 COPY . .
+
+ARG API_URL=https://sios-production.up.railway.app
+ENV VITE_API_URL=$API_URL
+
 RUN npm run build
 
 # ── Stage 2: Serve with nginx ──

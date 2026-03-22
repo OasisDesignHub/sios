@@ -147,8 +147,17 @@ function useWebSocket(onMessage: (msg: WSMessage) => void) {
 
   useEffect(() => {
     function connect() {
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+      let wsUrl: string;
+      const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
+      if (apiUrl) {
+        // Derive WebSocket URL from API URL (https→wss, http→ws)
+        wsUrl = apiUrl.replace(/^http/, 'ws').replace(/\/$/, '') + '/ws';
+      } else {
+        // Local dev: connect through Vite proxy
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        wsUrl = `${protocol}//${window.location.host}/ws`;
+      }
+      const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => setConnected(true);
