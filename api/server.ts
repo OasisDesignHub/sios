@@ -199,7 +199,7 @@ app.get("/api/status", async (_req, res) => {
 
 // ── Start ──
 
-const PORT = parseInt(process.env.API_PORT || "3001", 10);
+const PORT = parseInt(process.env.PORT || process.env.API_PORT || "3001", 10);
 
 server.listen(PORT, () => {
   console.log(`SIOS API server running on http://localhost:${PORT}`);
