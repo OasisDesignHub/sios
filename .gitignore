@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+*.js
+*.js.map
+*.d.ts
+*.d.ts.map
+!vite.config.ts
+events/store/
+sios-analysis-*.json
+.DS_Store
+console/node_modules/
+console/dist/

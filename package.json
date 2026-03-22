@@ -1,0 +1,33 @@
+{
+  "name": "sios-strategic-intelligence",
+  "version": "0.1.0",
+  "description": "Strategic Intelligence Operating System — Multi-agent perspective analysis engine",
+  "main": "core/analysis-engine.js",
+  "type": "module",
+  "scripts": {
+    "analyze": "npx ts-node --esm core/cli.ts analyze",
+    "analyze:all": "npx ts-node --esm core/cli.ts analyze --all-agents",
+    "analyze:hormuz": "npx ts-node --esm core/cli.ts analyze --event events/sample-hormuz.json --all-agents",
+    "example": "npx ts-node --esm core/cli.ts example",
+    "console": "cd console && npm run dev",
+    "build": "tsc",
+    "ingest:gdelt": "npx ts-node --esm ingestion/gdelt/gdelt-ingest.ts",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.37.0",
+    "node-fetch": "^3.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "intelligence",
+    "geopolitics", 
+    "multi-agent",
+    "strategic-analysis",
+    "claude"
+  ]
+}

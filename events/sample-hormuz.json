@@ -1,0 +1,9 @@
+{
+  "id": "US-IR-STRIKE-2026-01",
+  "title": "US Military Strike on Iranian Nuclear Facilities",
+  "description": "United States Air Force and Navy assets have conducted strikes on Iranian nuclear enrichment facilities at Natanz and Fordow. Iran has declared a state of emergency and the Islamic Revolutionary Guard Corps (IRGC) has issued warnings about consequences for regional shipping. The Strait of Hormuz has seen increased IRGC naval activity.\n\nApproximately 20% of global oil and LNG transits through the strait daily. US helium production from natural gas fields in Qatar and the Gulf region represents approximately 30% of global supply. Semiconductor manufacturers require helium for chip cooling during manufacturing — a sustained shortage would affect yields at TSMC, Samsung, and Intel fabs. Current AI training cluster deployments require 8-12 months of lead time for chip procurement.",
+  "timestamp": "2026-03-22T00:00:00.000Z",
+  "geography": ["Iran", "Persian Gulf", "Strait of Hormuz", "Middle East", "Global"],
+  "actors": ["United States", "Iran", "IRGC", "Saudi Arabia", "China", "Russia", "TSMC", "Taiwan"],
+  "domain": "military"
+}
