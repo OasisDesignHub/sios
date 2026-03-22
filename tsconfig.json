@@ -21,7 +21,8 @@
     "synthesis/**/*.ts",
     "ingestion/**/*.ts",
     "competitive-intelligence/**/*.ts",
-    "events/**/*.ts"
+    "events/**/*.ts",
+    "api/**/*.ts"
   ],
   "exclude": [
     "node_modules",

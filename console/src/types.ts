@@ -1,22 +1,119 @@
 // =============================================================================
-// SIOS Console Types — Self-contained type definitions for the monitoring UI
+// SIOS Console Types — Aligned with backend API responses
 // =============================================================================
 
-/** Domain categories for world events */
+// ── Backend-native types (match core/types.ts) ──
+
 export type EventDomain =
-  | 'MILITARY'
-  | 'ECONOMIC'
-  | 'TECHNOLOGY'
-  | 'POLITICAL'
-  | 'ENERGY'
-  | 'SUPPLY_CHAIN'
-  | 'CYBER'
-  | 'DIPLOMATIC';
+  | 'military'
+  | 'economic'
+  | 'political'
+  | 'technological'
+  | 'informational';
 
-/** Severity / urgency classification */
-export type SeverityLevel = 'LOW' | 'MODERATE' | 'HIGH' | 'CRITICAL';
+export interface WorldEvent {
+  id: string;
+  title: string;
+  description: string;
+  timestamp: string;
+  geography: string[];
+  actors: string[];
+  domain: EventDomain;
+  source_urls?: string[];
+}
 
-/** The 12 analytical perspective lenses */
+export interface AgentAnalysis {
+  lens: string;
+  interpretation: string;
+  confidence: number;
+  error?: boolean;
+  [key: string]: unknown;
+}
+
+export interface Scenario {
+  label: string;
+  probability: number;
+  timeframe: string;
+}
+
+export interface SynthesisResult {
+  executive_brief: string;
+  convergence_signals: string[];
+  divergence_zones: string[];
+  novel_risks: string[];
+  scenarios: Scenario[];
+  watch_indicators: string[];
+  competitive_update: {
+    we_position: string;
+    they_position: string;
+    net_advantage_shift: string;
+  };
+}
+
+export interface SIOSAnalysis {
+  event: WorldEvent;
+  agent_outputs: Record<string, AgentAnalysis>;
+  synthesis: SynthesisResult;
+  timestamp: string;
+}
+
+// ── API response shapes ──
+
+export interface EventListItem {
+  event: WorldEvent;
+  hasAnalysis: boolean;
+}
+
+export interface EventDetail {
+  event: WorldEvent;
+  analysis: SIOSAnalysis | null;
+}
+
+export interface SystemStatus {
+  activeAgents: number;
+  totalAgents: number;
+  eventsProcessed: number;
+  lastIngestion: string | null;
+  systemState: 'NOMINAL' | 'ELEVATED' | 'ALERT';
+  runningAnalyses: string[];
+  wsClients: number;
+}
+
+// ── Scorecard types (from backend ScorecardEngine) ──
+
+export interface DomainNetAssessment {
+  weScore: number;
+  theyBestScore: number;
+  gap: number;
+}
+
+export type ScorecardDomainKey =
+  | 'military'
+  | 'economic'
+  | 'technology'
+  | 'narrative'
+  | 'alliance'
+  | 'supply_chain'
+  | 'demographic';
+
+export interface Scorecard {
+  timestamp: string;
+  netAssessment: Record<ScorecardDomainKey, DomainNetAssessment>;
+}
+
+// ── WebSocket message types ──
+
+export type WSMessage =
+  | { type: 'connected' }
+  | { type: 'analysis_started'; eventId: string; agents: string[] }
+  | { type: 'agent_started'; eventId: string; agent: string }
+  | { type: 'agent_completed'; eventId: string; agent: string; result: AgentAnalysis }
+  | { type: 'synthesis_started'; eventId: string }
+  | { type: 'analysis_complete'; eventId: string; analysis: SIOSAnalysis }
+  | { type: 'error'; eventId: string; message: string };
+
+// ── Display helpers ──
+
 export type AgentLens =
   | 'THUCYDIDES'
   | 'LEE_KUAN_YEW'
@@ -30,68 +127,3 @@ export type AgentLens =
   | 'EMERGENCE'
   | 'CONSTRUCTAL'
   | 'DIALECTICAL';
-
-/** A structured world event ingested by the system */
-export interface WorldEvent {
-  id: string;
-  title: string;
-  description: string;
-  domain: EventDomain;
-  severity: SeverityLevel;
-  timestamp: string;
-  source: string;
-  location?: string;
-  actors?: string[];
-  cascadeChain?: string[];
-}
-
-/** Output from a single analytical agent */
-export interface AgentAnalysis {
-  lens: AgentLens;
-  lensLabel: string;
-  confidence: number;          // 0.0 – 1.0
-  interpretation: string;
-  implications: string[];
-  timeHorizon: string;
-  keySignal?: string;
-}
-
-/** A convergence or divergence signal across agents */
-export interface ConvergenceSignal {
-  id: string;
-  type: 'CONVERGENCE' | 'DIVERGENCE';
-  description: string;
-  lenses: AgentLens[];
-  strength: number;            // 0.0 – 1.0
-}
-
-/** Scorecard domain entry for competitive assessment */
-export interface ScorecardDomain {
-  domain: string;
-  weScore: number;             // 0 – 100
-  theyScore: number;           // 0 – 100
-  trend: 'IMPROVING' | 'STABLE' | 'DECLINING';
-  delta: number;               // positive = WE advantage
-}
-
-/** Synthesized result from all agent outputs */
-export interface SynthesisResult {
-  eventId: string;
-  overallAssessment: string;
-  convergenceSignals: ConvergenceSignal[];
-  dominantNarrative: string;
-  riskLevel: SeverityLevel;
-  cascadeRisk: number;         // 0.0 – 1.0
-  agentOutputs: AgentAnalysis[];
-  scorecard: ScorecardDomain[];
-  timestamp: string;
-}
-
-/** System status for the header display */
-export interface SystemStatus {
-  activeAgents: number;
-  totalAgents: number;
-  eventsProcessed: number;
-  lastIngestion: string;
-  systemState: 'NOMINAL' | 'ELEVATED' | 'ALERT';
-}

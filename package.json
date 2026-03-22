@@ -5,27 +5,35 @@
   "main": "core/analysis-engine.js",
   "type": "module",
   "scripts": {
-    "analyze": "npx ts-node --esm core/cli.ts analyze",
-    "analyze:all": "npx ts-node --esm core/cli.ts analyze --all-agents",
-    "analyze:hormuz": "npx ts-node --esm core/cli.ts analyze --event events/sample-hormuz.json --all-agents",
-    "example": "npx ts-node --esm core/cli.ts example",
+    "analyze": "tsx core/cli.ts analyze",
+    "analyze:all": "tsx core/cli.ts analyze --all-agents",
+    "analyze:hormuz": "tsx core/cli.ts analyze --event events/sample-hormuz.json --all-agents",
+    "example": "tsx core/cli.ts example",
+    "api": "tsx api/server.ts",
     "console": "cd console && npm run dev",
     "build": "tsc",
-    "ingest:gdelt": "npx ts-node --esm ingestion/gdelt/gdelt-ingest.ts",
+    "ingest:gdelt": "tsx ingestion/gdelt/gdelt-ingest.ts",
     "test": "node --experimental-vm-modules node_modules/.bin/jest"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.37.0",
-    "node-fetch": "^3.3.0"
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "node-fetch": "^3.3.0",
+    "ws": "^8.20.0"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
     "@types/node": "^20.0.0",
+    "@types/ws": "^8.18.1",
     "ts-node": "^10.9.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.0.0"
   },
   "keywords": [
     "intelligence",
-    "geopolitics", 
+    "geopolitics",
     "multi-agent",
     "strategic-analysis",
     "claude"

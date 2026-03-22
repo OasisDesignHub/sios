@@ -16,16 +16,19 @@ perspective lenses, synthesizes the outputs, and produces competitive intelligen
 ### Key Commands
 ```bash
 # Run analysis on a single event
-npx ts-node core/cli.ts analyze --event events/sample-hormuz.json
+npm run analyze -- --event events/sample-hormuz.json
 
 # Run all 12 agents in parallel
-npx ts-node core/cli.ts analyze --event events/sample-hormuz.json --all-agents
+npm run analyze:all
 
-# Start monitoring console
-cd console && npm run dev
+# Start API server (port 3001)
+npm run api
+
+# Start monitoring console (port 5173, proxies to API)
+npm run console
 
 # Run ingestion (requires API keys)
-npx ts-node ingestion/gdelt/gdelt-ingest.ts
+npm run ingest:gdelt
 ```
 
 ### Environment Variables Required

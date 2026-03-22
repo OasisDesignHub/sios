@@ -14,7 +14,7 @@ const client = new Anthropic();
 /**
  * Run a single agent analysis
  */
-async function runAgent(
+export async function runAgent(
   agentKey: string,
   event: WorldEvent,
   contextData?: string
@@ -75,7 +75,7 @@ Be specific, analytical, and calibrated. Avoid vague language.`;
 /**
  * Run synthesis across all agent outputs
  */
-async function runSynthesis(
+export async function runSynthesis(
   event: WorldEvent,
   agentOutputs: Record<string, AgentAnalysis>
 ): Promise<SynthesisResult> {
