@@ -22,7 +22,80 @@ const MAX_TOKENS = 4096;
 // ── Internal helpers ──
 
 /**
+ * Distill an agent output to interpretation + up to 3 priority fields.
+ * Keeps token count manageable so the synthesis prompt doesn't exceed limits.
+ */
+function distillAgentOutput(output: AgentAnalysis): Record<string, unknown> {
+  const keep: Record<string, unknown> = {
+    lens: output.lens,
+    interpretation: output.interpretation,
+    confidence: output.confidence,
+  };
+
+  const priorityKeys = [
+    "scenarios",
+    "watch_indicators",
+    "key_miscalculation_risks",
+    "competitive_update",
+    "second_order_effects",
+    "predicted_reroutings",
+    "critical_nodes",
+    "accelerated_trajectories",
+    "fascism_indicators_present",
+    "critical_threshold_indicators",
+    "early_warning_signals",
+    "historical_parallel",
+    "contrarian_finding",
+    "shi_assessment",
+    "compute_impact",
+    "singularity_timeline_shift",
+    "integration_vs_fragmentation",
+    "phase_transition_proximity",
+    "obstructed_flows",
+  ];
+
+  const baseKeys = new Set(["lens", "interpretation", "confidence", "error"]);
+  let extras = 0;
+
+  for (const key of priorityKeys) {
+    if (extras >= 3) break;
+    const val = output[key];
+    if (val === undefined || val === null) continue;
+
+    if (typeof val === "string") {
+      keep[key] = val.length > 200 ? val.slice(0, 200) + "..." : val;
+    } else if (Array.isArray(val)) {
+      keep[key] = val.slice(0, 3);
+    } else {
+      keep[key] = val;
+    }
+    extras++;
+  }
+
+  if (extras < 3) {
+    for (const [key, val] of Object.entries(output)) {
+      if (extras >= 3) break;
+      if (baseKeys.has(key) || key in keep) continue;
+      if (val === undefined || val === null) continue;
+
+      if (typeof val === "string") {
+        keep[key] = val.length > 200 ? val.slice(0, 200) + "..." : val;
+      } else if (Array.isArray(val)) {
+        keep[key] = val.slice(0, 3);
+      } else {
+        keep[key] = val;
+      }
+      extras++;
+    }
+  }
+
+  return keep;
+}
+
+/**
  * Format all agent outputs into a structured prompt block for the LLM.
+ * Each output is distilled to interpretation + 3 priority fields to avoid
+ * exceeding context limits.
  */
 function formatAgentOutputs(
   agentOutputs: Record<string, AgentAnalysis>,
@@ -30,8 +103,9 @@ function formatAgentOutputs(
   const sections: string[] = [];
 
   for (const [agentKey, analysis] of Object.entries(agentOutputs)) {
+    const distilled = distillAgentOutput(analysis);
     sections.push(
-      `=== ${agentKey} (confidence: ${analysis.confidence}) ===\n${JSON.stringify(analysis, null, 2)}`,
+      `=== ${agentKey} (confidence: ${analysis.confidence}) ===\n${JSON.stringify(distilled, null, 2)}`,
     );
   }
 
@@ -69,7 +143,7 @@ Produce your synthesis as a single JSON object with this exact structure:
   }
 }
 
-Respond with ONLY the JSON object, no markdown fencing or commentary.`;
+Respond with ONLY a JSON code block — wrap the JSON in \`\`\`json and \`\`\` fences. No other text.`;
 }
 
 /**
@@ -77,10 +151,23 @@ Respond with ONLY the JSON object, no markdown fencing or commentary.`;
  * Handles JSON extraction from potentially wrapped responses.
  */
 function parseSynthesisResponse(raw: string): SynthesisResult {
-  // Strip markdown code fences if present
-  let cleaned = raw.trim();
-  if (cleaned.startsWith("```")) {
-    cleaned = cleaned.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
+  // Extract JSON from ```json ... ``` code block first
+  const fenceMatch = raw.match(/```json\s*([\s\S]*?)\s*```/);
+  let cleaned: string;
+  if (fenceMatch) {
+    cleaned = fenceMatch[1];
+  } else {
+    // Fallback: strip leading/trailing fences or find outermost braces
+    cleaned = raw.trim();
+    if (cleaned.startsWith("```")) {
+      cleaned = cleaned.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "");
+    }
+    // If still not clean JSON, extract first complete object
+    const braceStart = cleaned.indexOf("{");
+    const braceEnd = cleaned.lastIndexOf("}");
+    if (braceStart !== -1 && braceEnd > braceStart) {
+      cleaned = cleaned.slice(braceStart, braceEnd + 1);
+    }
   }
 
   const parsed = JSON.parse(cleaned) as Record<string, unknown>;

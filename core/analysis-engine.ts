@@ -165,7 +165,8 @@ ${event.description}
 AGENT ANALYSES:
 ${agentSummary}
 
-Produce a synthesis JSON with this structure:
+Produce a synthesis as a JSON code block (wrap in \`\`\`json and \`\`\` fences). Use this exact structure:
+\`\`\`json
 {
   "executive_brief": "3 paragraphs for a senior official",
   "convergence_signals": ["what multiple agents agree on"],
@@ -177,10 +178,12 @@ Produce a synthesis JSON with this structure:
   "watch_indicators": ["specific things to monitor"],
   "competitive_update": {
     "we_position": "US+allies position assessment",
-    "they_position": "Adversary position assessment", 
+    "they_position": "Adversary position assessment",
     "net_advantage_shift": "Who gained/lost competitive advantage"
   }
-}`;
+}
+\`\`\`
+Respond with ONLY the JSON code block. No other text.`;
 
   try {
     const response = await client.messages.create({
@@ -193,10 +196,22 @@ Produce a synthesis JSON with this structure:
     const content = response.content[0];
     if (content.type !== "text") throw new Error("Unexpected response type");
 
-    const jsonMatch = content.text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("No synthesis JSON found");
+    // Extract JSON from ```json ... ``` code block first
+    const fenceMatch = content.text.match(/```json\s*([\s\S]*?)\s*```/);
+    let jsonStr: string;
+    if (fenceMatch) {
+      jsonStr = fenceMatch[1];
+    } else {
+      // Fallback: find outermost braces
+      const braceStart = content.text.indexOf("{");
+      const braceEnd = content.text.lastIndexOf("}");
+      if (braceStart === -1 || braceEnd <= braceStart) {
+        throw new Error("No synthesis JSON found");
+      }
+      jsonStr = content.text.slice(braceStart, braceEnd + 1);
+    }
 
-    return JSON.parse(jsonMatch[0]);
+    return JSON.parse(jsonStr);
   } catch (error) {
     return {
       executive_brief: `Synthesis failed: ${error instanceof Error ? error.message : "Unknown error"}`,
