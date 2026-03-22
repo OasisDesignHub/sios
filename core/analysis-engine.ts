@@ -73,6 +73,82 @@ Be specific, analytical, and calibrated. Avoid vague language.`;
 }
 
 /**
+ * Distill an agent output to the fields that matter for synthesis.
+ * Keeps: lens, interpretation, confidence, plus up to 3 of the most
+ * informative extra fields (arrays/strings only, truncated to 200 chars).
+ */
+function distillAgentOutput(output: AgentAnalysis): Record<string, unknown> {
+  const keep: Record<string, unknown> = {
+    lens: output.lens,
+    interpretation: output.interpretation,
+    confidence: output.confidence,
+  };
+
+  // Prioritised extra fields across all agent schemas
+  const priorityKeys = [
+    "scenarios",
+    "watch_indicators",
+    "key_miscalculation_risks",
+    "competitive_update",
+    "second_order_effects",
+    "predicted_reroutings",
+    "critical_nodes",
+    "accelerated_trajectories",
+    "fascism_indicators_present",
+    "critical_threshold_indicators",
+    "early_warning_signals",
+    "implications",
+    "time_horizon",
+    "historical_parallel",
+    "contrarian_finding",
+    "shi_assessment",
+    "compute_impact",
+    "singularity_timeline_shift",
+    "integration_vs_fragmentation",
+    "phase_transition_proximity",
+    "obstructed_flows",
+  ];
+
+  const baseKeys = new Set(["lens", "interpretation", "confidence", "error"]);
+  let extras = 0;
+
+  for (const key of priorityKeys) {
+    if (extras >= 3) break;
+    const val = output[key];
+    if (val === undefined || val === null) continue;
+
+    if (typeof val === "string") {
+      keep[key] = val.length > 200 ? val.slice(0, 200) + "..." : val;
+    } else if (Array.isArray(val)) {
+      keep[key] = val.slice(0, 3);
+    } else {
+      keep[key] = val;
+    }
+    extras++;
+  }
+
+  // If we didn't find 3 priority keys, fill from remaining keys
+  if (extras < 3) {
+    for (const [key, val] of Object.entries(output)) {
+      if (extras >= 3) break;
+      if (baseKeys.has(key) || key in keep) continue;
+      if (val === undefined || val === null) continue;
+
+      if (typeof val === "string") {
+        keep[key] = val.length > 200 ? val.slice(0, 200) + "..." : val;
+      } else if (Array.isArray(val)) {
+        keep[key] = val.slice(0, 3);
+      } else {
+        keep[key] = val;
+      }
+      extras++;
+    }
+  }
+
+  return keep;
+}
+
+/**
  * Run synthesis across all agent outputs
  */
 export async function runSynthesis(
@@ -80,7 +156,7 @@ export async function runSynthesis(
   agentOutputs: Record<string, AgentAnalysis>
 ): Promise<SynthesisResult> {
   const agentSummary = Object.entries(agentOutputs)
-    .map(([key, output]) => `## ${key}\n${JSON.stringify(output, null, 2)}`)
+    .map(([key, output]) => `## ${key}\n${JSON.stringify(distillAgentOutput(output), null, 2)}`)
     .join("\n\n");
 
   const userMessage = `EVENT: ${event.title}
